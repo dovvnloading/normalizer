@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Noramlizer", "Noramlizer\Noramlizer.pyproj", "{5129BDC0-D8D3-4FD1-9BCD-79BE48684D45}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5129BDC0-D8D3-4FD1-9BCD-79BE48684D45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5129BDC0-D8D3-4FD1-9BCD-79BE48684D45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23796470-45B6-4FF3-9AC3-7C67A7763539}
+	EndGlobalSection
+EndGlobal
