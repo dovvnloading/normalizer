@@ -1,11 +1,7 @@
 import sys
 import numpy as np
 from PIL import Image
-from scipy.signal import convolve2d
-from scipy.ndimage import gaussian_filter
-from skimage.restoration import denoise_bilateral
-
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QGridLayout, QLabel, QPushButton, QComboBox, QSlider, QCheckBox,
@@ -13,67 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QImage, QPixmap, QIcon
 
-class NormalizerLogic:
-    """Encapsulates the image processing logic for generating normal maps."""
-
-    def generate_normal_map(self, image_data, params):
-        if image_data is None:
-            return None
-
-        # --- 1. Convert to Grayscale Height Map ---
-        img_float = image_data.astype(np.float64) / 255.0 # Work with floats in [0, 1] for filters
-        height_map = (img_float[:, :, 0] * 0.2126 + 
-                      img_float[:, :, 1] * 0.7152 + 
-                      img_float[:, :, 2] * 0.0722)
-
-        # --- 2. Apply Smoothing ---
-        use_hq_mode = params.get('high_quality', False)
-        smoothness = params.get('smoothness', 0.0)
-
-        if use_hq_mode:
-            # Only apply the filter if smoothness is non-zero to prevent division by zero errors.
-            if smoothness > 0.001:
-                sigma_color = smoothness / 10.0
-                sigma_spatial = smoothness
-                height_map = denoise_bilateral(height_map, sigma_color=sigma_color, sigma_spatial=sigma_spatial, channel_axis=None)
-        else:
-            if smoothness > 0:
-                height_map = gaussian_filter(height_map, sigma=smoothness)
-
-        # --- 3. Calculate Gradients using Scharr Operator (more accurate than Sobel) ---
-        scharr_x = np.array([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]])
-        scharr_y = np.array([[-3, -10, -3], [0, 0, 0], [3, 10, 3]])
-
-        grad_x = convolve2d(height_map, scharr_x, mode='same', boundary='symm')
-        grad_y = convolve2d(height_map, scharr_y, mode='same', boundary='symm')
-
-        # --- 4. Calculate Normal Vectors ---
-        intensity = params['intensity']
-        
-        nx = -grad_x * intensity
-        ny = -grad_y * intensity
-        
-        if params['invert_x']:
-            nx *= -1
-        if params['invert_y']:
-            ny *= -1
-        
-        nz = np.ones_like(nx)
-
-        magnitude = np.sqrt(nx**2 + ny**2 + nz**2)
-        magnitude[magnitude == 0] = 1
-
-        nx_norm = nx / magnitude
-        ny_norm = ny / magnitude
-        nz_norm = nz / magnitude
-
-        # --- 5. Encode Vectors into RGB Image ---
-        normal_map = np.zeros_like(img_float)
-        normal_map[..., 0] = (nx_norm * 0.5 + 0.5)
-        normal_map[..., 1] = (ny_norm * 0.5 + 0.5)
-        normal_map[..., 2] = (nz_norm * 0.5 + 0.5)
-
-        return (normal_map * 255).astype(np.uint8)
+from normalizer_logic import NormalizerLogic
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -222,7 +158,7 @@ class MainWindow(QMainWindow):
                 final_img.save(file_path)
 
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save image:\an{e}")
+                QMessageBox.critical(self, "Error", f"Failed to save image:\n{e}")
 
     def _process_image(self):
         if self.original_image_data is None:
